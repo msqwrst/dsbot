@@ -1,10 +1,10 @@
 {
   "name": "dsbot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "discord-bot-standalone.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js"
+    "start": "node discord-bot-standalone.js"
   },
   "dependencies": {
     "discord.js": "^14.16.3",
