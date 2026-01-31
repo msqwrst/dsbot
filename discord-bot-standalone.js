@@ -17,16 +17,37 @@ const {
    CONFIG
 ======================= */
 
-const TOKEN = process.env.DISCORD_TOKEN;
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID; // Application ID
-const GUILD_ID = process.env.DISCORD_GUILD_ID;   // для быстрой регистрации команд (опционально)
-const ADMIN_ROLE_ID = process.env.ADMIN_ROLE_ID; // роль админа (опционально)
+const pick = (...keys) => {
+  for (const k of keys) {
+    const v = process.env[k];
+    if (typeof v === "string" && v.trim().length > 0) return v.trim();
+  }
+  return "";
+};
+
+const TOKEN = pick("DISCORD_TOKEN", "DISCORD_BOT_TOKEN", "DISCORD_BOT", "BOT_TOKEN");
+const CLIENT_ID = pick("DISCORD_CLIENT_ID", "DISCORD_APP_ID", "CLIENT_ID");
+const GUILD_ID = pick("DISCORD_GUILD_ID", "GUILD_ID");
+const ADMIN_ROLE_ID = pick("ADMIN_ROLE_ID", "DISCORD_ADMIN_ROLE_ID");
 const PORT = process.env.PORT || 3000;
 
-if (!TOKEN || !CLIENT_ID) {
-  console.error("❌ Missing env: DISCORD_TOKEN and/or DISCORD_CLIENT_ID");
+// 🔎 дебаг: значения не показываем, только true/false
+console.log("[env] DISCORD_TOKEN:", !!process.env.DISCORD_TOKEN);
+console.log("[env] DISCORD_BOT_TOKEN:", !!process.env.DISCORD_BOT_TOKEN);
+console.log("[env] DISCORD_CLIENT_ID:", !!process.env.DISCORD_CLIENT_ID);
+console.log("[env] DISCORD_APP_ID:", !!process.env.DISCORD_APP_ID);
+console.log("[env] DISCORD_GUILD_ID:", !!process.env.DISCORD_GUILD_ID);
+console.log("[env] PORT:", !!process.env.PORT);
+
+if (!TOKEN) {
+  console.error("❌ Missing env: DISCORD_TOKEN (or DISCORD_BOT_TOKEN)");
   process.exit(1);
 }
+
+if (!CLIENT_ID) {
+  console.warn("⚠️ DISCORD_CLIENT_ID missing: commands will NOT auto-register.");
+}
+
 
 /* =======================
    SIMPLE FILE DB
@@ -120,6 +141,7 @@ const commands = [
 ].map(c => c.toJSON());
 
 async function registerCommands() {
+  if (!CLIENT_ID) return;
   const rest = new REST({ version: "10" }).setToken(TOKEN);
 
   try {
